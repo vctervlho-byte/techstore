@@ -1,0 +1,1000 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TechStore — Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --verde:    #00c896;
+      --verde-d:  #009e77;
+      --azul-osc: #0a1628;
+      --azul-med: #112240;
+      --azul-clr: #1a3460;
+      --gris:     #8892a4;
+      --blanco:   #e8edf5;
+      --rojo:     #ff4d6d;
+      --amarillo: #ffd166;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; background: var(--azul-osc);
+      font-family: 'Space Grotesk', sans-serif;
+      color: var(--blanco); min-height: 100vh;
+      display: flex;
+    }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 230px; min-height: 100vh;
+      background: var(--azul-med);
+      border-right: 1px solid #1e3a5f;
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; left: 0; bottom: 0;
+      z-index: 100; transition: transform .3s;
+    }
+    .sidebar-logo {
+      padding: 1.5rem 1.25rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.3rem; font-weight: 700;
+      color: var(--verde); letter-spacing: -1px;
+      border-bottom: 1px solid #1e3a5f;
+    }
+    .sidebar-logo span { color: var(--blanco); }
+    .sidebar-user {
+      padding: .75rem 1.25rem;
+      font-size: .8rem; color: var(--gris);
+      border-bottom: 1px solid #1e3a5f;
+    }
+    .sidebar-user strong { color: var(--blanco); display: block; }
+    .nav-group-label {
+      padding: 1rem 1.25rem .4rem;
+      font-size: .7rem; letter-spacing: .1em;
+      color: var(--gris); font-weight: 700;
+      text-transform: uppercase;
+    }
+    .nav-item { list-style: none; }
+    .nav-link {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .6rem 1.25rem;
+      color: var(--gris); text-decoration: none;
+      border-radius: 0; font-size: .9rem; font-weight: 500;
+      border-left: 3px solid transparent;
+      transition: all .15s;
+    }
+    .nav-link:hover { color: var(--blanco); background: #1a3460; }
+    .nav-link.active {
+      color: var(--verde);
+      background: #00c89615;
+      border-left-color: var(--verde);
+    }
+    .nav-link i { font-size: 1.1rem; width: 20px; }
+    .sidebar-footer {
+      margin-top: auto;
+      padding: 1rem 1.25rem;
+      border-top: 1px solid #1e3a5f;
+    }
+    .btn-logout {
+      width: 100%; background: transparent;
+      border: 1px solid #1e3a5f; color: var(--gris);
+      border-radius: 8px; padding: .5rem; font-size: .85rem;
+      font-family: 'Space Grotesk', sans-serif; cursor: pointer;
+      transition: all .2s;
+    }
+    .btn-logout:hover { border-color: var(--rojo); color: var(--rojo); }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: 230px; flex: 1;
+      padding: 2rem 1.5rem;
+      min-height: 100vh;
+    }
+    .page-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .page-title {
+      font-size: 1.5rem; font-weight: 700; margin: 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+    .section { display: none; }
+    .section.active { display: block; animation: fadeIn .3s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+
+    /* ── CARDS RESUMEN ── */
+    .kpi-card {
+      background: var(--azul-med); border: 1px solid #1e3a5f;
+      border-radius: 14px; padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; gap: 1rem;
+      transition: transform .2s, box-shadow .2s;
+    }
+    .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0,0,0,.3); }
+    .kpi-icon {
+      width: 48px; height: 48px; border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.4rem;
+    }
+    .kpi-val { font-size: 1.6rem; font-weight: 700; line-height: 1; }
+    .kpi-label { color: var(--gris); font-size: .8rem; margin-top: .2rem; }
+
+    /* ── TABLA ── */
+    .ts-table { width: 100%; border-collapse: separate; border-spacing: 0 .4rem; }
+    .ts-table thead th {
+      background: transparent; border: none;
+      color: var(--gris); font-size: .75rem; letter-spacing: .08em;
+      text-transform: uppercase; font-weight: 700;
+      padding: .5rem 1rem;
+    }
+    .ts-table tbody tr {
+      background: var(--azul-med);
+      border-radius: 10px; transition: background .15s;
+    }
+    .ts-table tbody tr:hover { background: #1a3460; }
+    .ts-table tbody td {
+      padding: .75rem 1rem; border: none;
+      vertical-align: middle;
+    }
+    .ts-table tbody td:first-child { border-radius: 10px 0 0 10px; }
+    .ts-table tbody td:last-child  { border-radius: 0 10px 10px 0; }
+    .badge-ts {
+      padding: .3em .75em; border-radius: 20px;
+      font-size: .75rem; font-weight: 600;
+    }
+    .badge-verde  { background: #00c89622; color: var(--verde); }
+    .badge-rojo   { background: #ff4d6d22; color: var(--rojo); }
+    .badge-amarillo { background: #ffd16622; color: var(--amarillo); }
+
+    /* ── CARD FORM ── */
+    .ts-card {
+      background: var(--azul-med); border: 1px solid #1e3a5f;
+      border-radius: 14px; padding: 1.5rem;
+    }
+    .form-control, .form-select {
+      background: #0d1f3c; border: 1px solid #1e3a5f;
+      color: var(--blanco); border-radius: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .form-control:focus, .form-select:focus {
+      background: #0d1f3c; border-color: var(--verde);
+      color: var(--blanco); box-shadow: 0 0 0 3px #00c89630;
+    }
+    .form-label { color: var(--gris); font-size: .82rem; font-weight: 600; letter-spacing: .04em; }
+    .form-control::placeholder { color: #4a5568; }
+
+    /* ── BOTONES ── */
+    .btn-ts-primary {
+      background: var(--verde); color: #000; border: none;
+      border-radius: 10px; font-weight: 700;
+      font-family: 'Space Grotesk', sans-serif;
+      padding: .6rem 1.25rem; transition: all .2s;
+    }
+    .btn-ts-primary:hover { background: var(--verde-d); color:#000; box-shadow: 0 6px 20px #00c89640; }
+    .btn-ts-danger {
+      background: transparent; color: var(--rojo);
+      border: 1px solid #ff4d6d55; border-radius: 8px;
+      padding: .3rem .6rem; font-size: .8rem; transition: all .2s;
+    }
+    .btn-ts-danger:hover { background: var(--rojo); color: #fff; }
+    .btn-ts-sm {
+      background: transparent; color: var(--gris);
+      border: 1px solid #1e3a5f; border-radius: 8px;
+      padding: .3rem .6rem; font-size: .8rem; transition: all .2s;
+    }
+    .btn-ts-sm:hover { border-color: var(--verde); color: var(--verde); }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 1.5rem; right: 1.5rem;
+      background: var(--azul-med); border: 1px solid #1e3a5f;
+      border-radius: 12px; padding: .75rem 1.25rem;
+      display: flex; align-items: center; gap: .75rem;
+      box-shadow: 0 12px 30px rgba(0,0,0,.4);
+      z-index: 9999; transform: translateY(100px) scale(.95);
+      opacity: 0; transition: all .3s ease;
+      font-size: .88rem; max-width: 340px;
+    }
+    #toast.show { transform: none; opacity: 1; }
+    #toast i { font-size: 1.1rem; }
+
+    /* ── MODAL ── */
+    .ts-modal .modal-content {
+      background: var(--azul-med); border: 1px solid #1e3a5f;
+      border-radius: 16px; color: var(--blanco);
+    }
+    .ts-modal .modal-header {
+      border-bottom: 1px solid #1e3a5f; padding: 1.25rem 1.5rem;
+    }
+    .ts-modal .modal-title { font-family: 'JetBrains Mono', monospace; font-weight: 700; }
+    .ts-modal .modal-footer { border-top: 1px solid #1e3a5f; }
+    .ts-modal .btn-close { filter: invert(1); }
+
+    /* ── TICKET ── */
+    #ticket-content {
+      background: #fff; color: #000; padding: 1.5rem;
+      font-family: 'JetBrains Mono', monospace;
+      border-radius: 10px; font-size: .85rem;
+    }
+    #ticket-content .ticket-sep { border-top: 1px dashed #aaa; margin: .5rem 0; }
+
+    /* ── ITEMS VENTA ── */
+    .item-row { display: flex; gap: .5rem; align-items: center; margin-bottom: .5rem; }
+    .item-row select { flex: 2; }
+    .item-row input  { flex: 1; }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); }
+      .sidebar.open { transform: none; }
+      .main { margin-left: 0; padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ SIDEBAR ══════════════════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">Tech<span>Store</span></div>
+  <div class="sidebar-user">
+    <strong>{{ usuario }}</strong>
+    Sistema de Ventas
+  </div>
+  <ul class="nav flex-column mt-1 ps-0">
+    <li class="nav-group-label">Principal</li>
+    <li class="nav-item">
+      <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+        <i class="bi bi-grid-1x2-fill"></i> Dashboard
+      </a>
+    </li>
+    <li class="nav-group-label">Gestión</li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" onclick="showSection('productos')">
+        <i class="bi bi-box-seam-fill"></i> Productos
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" onclick="showSection('clientes')">
+        <i class="bi bi-people-fill"></i> Clientes
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" onclick="showSection('ventas')">
+        <i class="bi bi-receipt-cutoff"></i> Ventas
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" onclick="showSection('nueva-venta')">
+        <i class="bi bi-plus-circle-fill"></i> Nueva Venta
+      </a>
+    </li>
+    <li class="nav-group-label">Análisis</li>
+    <li class="nav-item">
+      <a class="nav-link" href="#" onclick="showSection('reportes')">
+        <i class="bi bi-bar-chart-fill"></i> Reportes
+      </a>
+    </li>
+  </ul>
+  <div class="sidebar-footer">
+    <button class="btn-logout" onclick="logout()">
+      <i class="bi bi-box-arrow-left me-2"></i>Cerrar Sesión
+    </button>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════ MAIN ══════════════════════════════ -->
+<main class="main">
+
+  <!-- ─── DASHBOARD ─── -->
+  <section id="sec-dashboard" class="section active">
+    <div class="page-header">
+      <h1 class="page-title">// dashboard</h1>
+      <span class="badge badge-ts badge-verde" id="db-status">
+        <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>MongoDB Conectado
+      </span>
+    </div>
+    <div class="row g-3 mb-4" id="kpi-row">
+      <div class="col-md-3"><div class="kpi-card">
+        <div class="kpi-icon" style="background:#00c89622;color:var(--verde)"><i class="bi bi-currency-dollar"></i></div>
+        <div><div class="kpi-val" id="kpi-total">—</div><div class="kpi-label">Total Vendido</div></div>
+      </div></div>
+      <div class="col-md-3"><div class="kpi-card">
+        <div class="kpi-icon" style="background:#0066ff22;color:#4d9dff"><i class="bi bi-receipt-cutoff"></i></div>
+        <div><div class="kpi-val" id="kpi-ventas">—</div><div class="kpi-label">Total Ventas</div></div>
+      </div></div>
+      <div class="col-md-3"><div class="kpi-card">
+        <div class="kpi-icon" style="background:#ffd16622;color:var(--amarillo)"><i class="bi bi-box-seam"></i></div>
+        <div><div class="kpi-val" id="kpi-productos">—</div><div class="kpi-label">Productos</div></div>
+      </div></div>
+      <div class="col-md-3"><div class="kpi-card">
+        <div class="kpi-icon" style="background:#ff4d6d22;color:var(--rojo)"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <div><div class="kpi-val" id="kpi-stock">—</div><div class="kpi-label">Stock Bajo (&lt;5)</div></div>
+      </div></div>
+    </div>
+
+    <div class="row g-3">
+      <div class="col-md-7">
+        <div class="ts-card h-100">
+          <h6 class="fw-bold mb-3" style="font-family:'JetBrains Mono',monospace">
+            <i class="bi bi-graph-up me-2" style="color:var(--verde)"></i>Últimas Ventas
+          </h6>
+          <table class="ts-table">
+            <thead><tr>
+              <th>Fecha</th><th>Cliente</th><th>Total</th><th>Vendedor</th>
+            </tr></thead>
+            <tbody id="dash-ventas"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="col-md-5">
+        <div class="ts-card h-100">
+          <h6 class="fw-bold mb-3" style="font-family:'JetBrains Mono',monospace">
+            <i class="bi bi-trophy-fill me-2" style="color:var(--amarillo)"></i>Top Productos
+          </h6>
+          <div id="top-productos"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PRODUCTOS ─── -->
+  <section id="sec-productos" class="section">
+    <div class="page-header">
+      <h1 class="page-title">// productos</h1>
+      <button class="btn btn-ts-primary" data-bs-toggle="modal" data-bs-target="#modalProducto" onclick="resetModalProducto()">
+        <i class="bi bi-plus-lg me-2"></i>Nuevo Producto
+      </button>
+    </div>
+    <div class="ts-card">
+      <table class="ts-table" id="tabla-productos">
+        <thead><tr>
+          <th>Nombre</th><th>Categoría</th><th>Precio</th><th>Stock</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="body-productos"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── CLIENTES ─── -->
+  <section id="sec-clientes" class="section">
+    <div class="page-header">
+      <h1 class="page-title">// clientes</h1>
+      <button class="btn btn-ts-primary" data-bs-toggle="modal" data-bs-target="#modalCliente" onclick="resetModalCliente()">
+        <i class="bi bi-person-plus-fill me-2"></i>Nuevo Cliente
+      </button>
+    </div>
+    <div class="ts-card">
+      <table class="ts-table">
+        <thead><tr>
+          <th>Nombre</th><th>Email</th><th>Teléfono</th><th>Dirección</th><th>Acciones</th>
+        </tr></thead>
+        <tbody id="body-clientes"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── VENTAS ─── -->
+  <section id="sec-ventas" class="section">
+    <div class="page-header">
+      <h1 class="page-title">// historial ventas</h1>
+      <button class="btn btn-ts-primary" onclick="showSection('nueva-venta')">
+        <i class="bi bi-plus-lg me-2"></i>Nueva Venta
+      </button>
+    </div>
+    <div class="ts-card">
+      <table class="ts-table">
+        <thead><tr>
+          <th>Fecha</th><th>Cliente</th><th>Productos</th><th>Total</th><th>Vendedor</th><th>Ticket</th>
+        </tr></thead>
+        <tbody id="body-ventas"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ─── NUEVA VENTA ─── -->
+  <section id="sec-nueva-venta" class="section">
+    <div class="page-header">
+      <h1 class="page-title">// nueva venta</h1>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-8">
+        <div class="ts-card mb-3">
+          <h6 class="fw-bold mb-3" style="font-family:'JetBrains Mono',monospace">Cliente</h6>
+          <select class="form-select" id="venta-cliente">
+            <option value="">— Sin cliente (venta rápida) —</option>
+          </select>
+        </div>
+        <div class="ts-card">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0" style="font-family:'JetBrains Mono',monospace">Productos</h6>
+            <button class="btn btn-ts-sm" onclick="agregarItemVenta()">
+              <i class="bi bi-plus me-1"></i>Agregar producto
+            </button>
+          </div>
+          <div id="items-venta"></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="ts-card">
+          <h6 class="fw-bold mb-3" style="font-family:'JetBrains Mono',monospace">Resumen</h6>
+          <div class="d-flex justify-content-between mb-2">
+            <span style="color:var(--gris)">Subtotal</span>
+            <span id="rv-subtotal">$0.00</span>
+          </div>
+          <hr style="border-color:#1e3a5f">
+          <div class="d-flex justify-content-between mb-3">
+            <span class="fw-bold">TOTAL</span>
+            <span class="fw-bold" style="color:var(--verde);font-size:1.2rem" id="rv-total">$0.00</span>
+          </div>
+          <button class="btn btn-ts-primary w-100" onclick="procesarVenta()">
+            <i class="bi bi-check-circle-fill me-2"></i>Procesar Venta
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── REPORTES ─── -->
+  <section id="sec-reportes" class="section">
+    <div class="page-header">
+      <h1 class="page-title">// reportes</h1>
+    </div>
+    <div class="row g-3 mb-3">
+      <div class="col-md-4">
+        <div class="ts-card">
+          <h6 class="fw-bold mb-3" style="font-family:'JetBrains Mono',monospace">
+            <i class="bi bi-trophy-fill me-2" style="color:var(--amarillo)"></i>Más Vendidos
+          </h6>
+          <div id="rep-mas-vendidos"></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="ts-card">
+          <h6 class="fw-bold mb-3" style="font-family:'JetBrains Mono',monospace">
+            <i class="bi bi-boxes me-2" style="color:var(--verde)"></i>Inventario
+          </h6>
+          <div id="rep-inventario" style="max-height:340px;overflow-y:auto"></div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="ts-card">
+          <h6 class="fw-bold mb-3" style="font-family:'JetBrains Mono',monospace">
+            <i class="bi bi-calendar3 me-2" style="color:#4d9dff"></i>Ventas por Fecha
+          </h6>
+          <div id="rep-fechas" style="max-height:340px;overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ══════════════════════════════ MODALES ══════════════════════════════ -->
+
+<!-- Modal Producto -->
+<div class="modal fade ts-modal" id="modalProducto" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mp-titulo">Nuevo Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="mp-id">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">NOMBRE</label>
+            <input type="text" id="mp-nombre" class="form-control" placeholder="Laptop Dell XPS 15">
+          </div>
+          <div class="col-6">
+            <label class="form-label">PRECIO ($)</label>
+            <input type="number" id="mp-precio" class="form-control" placeholder="1299.99" min="0" step="0.01">
+          </div>
+          <div class="col-6">
+            <label class="form-label">STOCK</label>
+            <input type="number" id="mp-stock" class="form-control" placeholder="10" min="0">
+          </div>
+          <div class="col-12">
+            <label class="form-label">CATEGORÍA</label>
+            <input type="text" id="mp-categoria" class="form-control" placeholder="Laptops">
+          </div>
+          <div class="col-12">
+            <label class="form-label">DESCRIPCIÓN</label>
+            <textarea id="mp-desc" class="form-control" rows="2" placeholder="Descripción opcional..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ts-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-ts-primary" onclick="guardarProducto()">
+          <i class="bi bi-floppy-fill me-2"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Cliente -->
+<div class="modal fade ts-modal" id="modalCliente" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="mc-titulo">Nuevo Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="mc-id">
+        <div class="row g-3">
+          <div class="col-12">
+            <label class="form-label">NOMBRE</label>
+            <input type="text" id="mc-nombre" class="form-control" placeholder="Juan Pérez">
+          </div>
+          <div class="col-6">
+            <label class="form-label">EMAIL</label>
+            <input type="email" id="mc-email" class="form-control" placeholder="correo@ejemplo.com">
+          </div>
+          <div class="col-6">
+            <label class="form-label">TELÉFONO</label>
+            <input type="text" id="mc-tel" class="form-control" placeholder="+52 667 000 0000">
+          </div>
+          <div class="col-12">
+            <label class="form-label">DIRECCIÓN</label>
+            <input type="text" id="mc-dir" class="form-control" placeholder="Av. Principal 123, Culiacán">
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ts-sm" data-bs-dismiss="modal">Cancelar</button>
+        <button class="btn btn-ts-primary" onclick="guardarCliente()">
+          <i class="bi bi-floppy-fill me-2"></i>Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Ticket -->
+<div class="modal fade ts-modal" id="modalTicket" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🧾 Ticket de Venta</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="ticket-content"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ts-sm" onclick="window.print()">
+          <i class="bi bi-printer-fill me-2"></i>Imprimir
+        </button>
+        <button class="btn btn-ts-sm" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast">
+  <i id="toast-icon"></i>
+  <span id="toast-msg"></span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// ════════════════════════════════════════════════════
+// ESTADO GLOBAL
+// ════════════════════════════════════════════════════
+let productosCache = [];
+let clientesCache  = [];
+
+// ════════════════════════════════════════════════════
+// UTILIDADES
+// ════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const fmt = n => new Intl.NumberFormat('es-MX',{style:'currency',currency:'MXN'}).format(n);
+const fmtFecha = iso => new Date(iso).toLocaleDateString('es-MX',{day:'2-digit',month:'short',year:'numeric'});
+
+function toast(msg, tipo = 'ok') {
+  const el   = $('toast');
+  const icon = $('toast-icon');
+  $('toast-msg').textContent = msg;
+  icon.className = tipo === 'ok' ? 'bi bi-check-circle-fill' : 'bi bi-exclamation-circle-fill';
+  icon.style.color = tipo === 'ok' ? 'var(--verde)' : 'var(--rojo)';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+async function api(url, method = 'GET', body = null) {
+  const opts = { method, headers: {'Content-Type':'application/json'} };
+  if (body) opts.body = JSON.stringify(body);
+  const res  = await fetch(url, opts);
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Error en la solicitud');
+  return data;
+}
+
+// ════════════════════════════════════════════════════
+// NAVEGACIÓN
+// ════════════════════════════════════════════════════
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  $(`sec-${id}`).classList.add('active');
+  document.querySelector(`[onclick="showSection('${id}')"]`)?.classList.add('active');
+
+  // Cargar datos al cambiar sección
+  if (id === 'dashboard')    cargarDashboard();
+  if (id === 'productos')    cargarProductos();
+  if (id === 'clientes')     cargarClientes();
+  if (id === 'ventas')       cargarVentas();
+  if (id === 'nueva-venta')  initNuevaVenta();
+  if (id === 'reportes')     cargarReportes();
+}
+
+// ════════════════════════════════════════════════════
+// AUTH
+// ════════════════════════════════════════════════════
+async function logout() {
+  await fetch('/api/auth/logout', {method:'POST'});
+  window.location.href = '/login';
+}
+
+// ════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════
+async function cargarDashboard() {
+  try {
+    const [resumen, ventas, top] = await Promise.all([
+      api('/api/reportes/resumen'),
+      api('/api/ventas'),
+      api('/api/reportes/productos-mas-vendidos')
+    ]);
+
+    $('kpi-total').textContent    = fmt(resumen.total_vendido);
+    $('kpi-ventas').textContent   = resumen.total_ventas;
+    $('kpi-productos').textContent= resumen.total_productos;
+    $('kpi-stock').textContent    = resumen.stock_bajo;
+
+    // Últimas 5 ventas
+    $('dash-ventas').innerHTML = ventas.slice(0,5).map(v => `
+      <tr>
+        <td style="font-size:.82rem;color:var(--gris)">${fmtFecha(v.fecha)}</td>
+        <td>${v.cliente?.nombre || '—'}</td>
+        <td style="color:var(--verde);font-weight:700">${fmt(v.total)}</td>
+        <td style="font-size:.82rem">${v.vendedor}</td>
+      </tr>`).join('') || '<tr><td colspan="4" style="color:var(--gris);text-align:center">Sin ventas aún</td></tr>';
+
+    // Top productos
+    $('top-productos').innerHTML = top.slice(0,6).map((p,i) => `
+      <div class="d-flex justify-content-between align-items-center py-2" style="border-bottom:1px solid #1e3a5f">
+        <span>
+          <span style="color:var(--amarillo);font-family:'JetBrains Mono',monospace;font-size:.8rem">#${i+1}</span>
+          <span class="ms-2" style="font-size:.88rem">${p._id}</span>
+        </span>
+        <span class="badge-ts badge-verde">${p.cantidad} uds</span>
+      </div>`).join('') || '<p style="color:var(--gris);font-size:.85rem">Sin datos</p>';
+
+  } catch(e) { console.error(e); }
+}
+
+// ════════════════════════════════════════════════════
+// PRODUCTOS
+// ════════════════════════════════════════════════════
+async function cargarProductos() {
+  try {
+    productosCache = await api('/api/productos');
+    $('body-productos').innerHTML = productosCache.map(p => `
+      <tr>
+        <td>
+          <strong>${p.nombre}</strong>
+          ${p.descripcion ? `<div style="font-size:.75rem;color:var(--gris)">${p.descripcion}</div>` : ''}
+        </td>
+        <td><span class="badge-ts badge-amarillo">${p.categoria || 'General'}</span></td>
+        <td style="color:var(--verde);font-weight:700">${fmt(p.precio)}</td>
+        <td>
+          <span class="badge-ts ${p.stock < 5 ? 'badge-rojo' : 'badge-verde'}">${p.stock}</span>
+        </td>
+        <td>
+          <button class="btn btn-ts-sm me-1" onclick="editarProducto('${p._id}')">
+            <i class="bi bi-pencil-fill"></i>
+          </button>
+          <button class="btn btn-ts-danger" onclick="eliminarProducto('${p._id}','${p.nombre}')">
+            <i class="bi bi-trash-fill"></i>
+          </button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="5" style="color:var(--gris);text-align:center;padding:2rem">Sin productos registrados</td></tr>';
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function resetModalProducto() {
+  $('mp-titulo').textContent = 'Nuevo Producto';
+  ['mp-id','mp-nombre','mp-precio','mp-stock','mp-categoria','mp-desc']
+    .forEach(id => $(id).value = '');
+  $('mp-stock').value = 0;
+}
+
+function editarProducto(id) {
+  const p = productosCache.find(x => x._id === id);
+  if (!p) return;
+  $('mp-titulo').textContent = 'Editar Producto';
+  $('mp-id').value       = p._id;
+  $('mp-nombre').value   = p.nombre;
+  $('mp-precio').value   = p.precio;
+  $('mp-stock').value    = p.stock;
+  $('mp-categoria').value= p.categoria || '';
+  $('mp-desc').value     = p.descripcion || '';
+  new bootstrap.Modal($('modalProducto')).show();
+}
+
+async function guardarProducto() {
+  const id   = $('mp-id').value;
+  const body = {
+    nombre:      $('mp-nombre').value.trim(),
+    precio:      parseFloat($('mp-precio').value),
+    stock:       parseInt($('mp-stock').value),
+    categoria:   $('mp-categoria').value.trim(),
+    descripcion: $('mp-desc').value.trim()
+  };
+  if (!body.nombre || isNaN(body.precio)) { toast('Nombre y precio requeridos','err'); return; }
+  try {
+    if (id) await api(`/api/productos/${id}`, 'PUT', body);
+    else    await api('/api/productos', 'POST', body);
+    toast(id ? 'Producto actualizado' : 'Producto creado');
+    bootstrap.Modal.getInstance($('modalProducto'))?.hide();
+    cargarProductos();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+async function eliminarProducto(id, nombre) {
+  if (!confirm(`¿Eliminar "${nombre}"?`)) return;
+  try {
+    await api(`/api/productos/${id}`, 'DELETE');
+    toast('Producto eliminado');
+    cargarProductos();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ════════════════════════════════════════════════════
+// CLIENTES
+// ════════════════════════════════════════════════════
+async function cargarClientes() {
+  try {
+    clientesCache = await api('/api/clientes');
+    $('body-clientes').innerHTML = clientesCache.map(c => `
+      <tr>
+        <td><strong>${c.nombre}</strong></td>
+        <td style="color:var(--gris);font-size:.85rem">${c.email || '—'}</td>
+        <td style="font-size:.85rem">${c.telefono || '—'}</td>
+        <td style="font-size:.82rem;color:var(--gris)">${c.direccion || '—'}</td>
+        <td>
+          <button class="btn btn-ts-sm" onclick="editarCliente('${c._id}')">
+            <i class="bi bi-pencil-fill"></i>
+          </button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="5" style="color:var(--gris);text-align:center;padding:2rem">Sin clientes registrados</td></tr>';
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function resetModalCliente() {
+  $('mc-titulo').textContent = 'Nuevo Cliente';
+  ['mc-id','mc-nombre','mc-email','mc-tel','mc-dir']
+    .forEach(id => $(id).value = '');
+}
+
+function editarCliente(id) {
+  const c = clientesCache.find(x => x._id === id);
+  if (!c) return;
+  $('mc-titulo').textContent = 'Editar Cliente';
+  $('mc-id').value     = c._id;
+  $('mc-nombre').value = c.nombre;
+  $('mc-email').value  = c.email || '';
+  $('mc-tel').value    = c.telefono || '';
+  $('mc-dir').value    = c.direccion || '';
+  new bootstrap.Modal($('modalCliente')).show();
+}
+
+async function guardarCliente() {
+  const id   = $('mc-id').value;
+  const body = {
+    nombre:    $('mc-nombre').value.trim(),
+    email:     $('mc-email').value.trim(),
+    telefono:  $('mc-tel').value.trim(),
+    direccion: $('mc-dir').value.trim()
+  };
+  if (!body.nombre) { toast('El nombre es requerido','err'); return; }
+  try {
+    if (id) await api(`/api/clientes/${id}`, 'PUT', body);
+    else    await api('/api/clientes', 'POST', body);
+    toast(id ? 'Cliente actualizado' : 'Cliente registrado');
+    bootstrap.Modal.getInstance($('modalCliente'))?.hide();
+    cargarClientes();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ════════════════════════════════════════════════════
+// VENTAS
+// ════════════════════════════════════════════════════
+async function cargarVentas() {
+  try {
+    const ventas = await api('/api/ventas');
+    $('body-ventas').innerHTML = ventas.map(v => `
+      <tr>
+        <td style="font-size:.82rem;color:var(--gris)">${fmtFecha(v.fecha)}</td>
+        <td>${v.cliente?.nombre || '—'}</td>
+        <td style="font-size:.8rem;color:var(--gris)">${v.items?.length || 0} artículo(s)</td>
+        <td style="color:var(--verde);font-weight:700">${fmt(v.total)}</td>
+        <td style="font-size:.82rem">${v.vendedor}</td>
+        <td>
+          <button class="btn btn-ts-sm" onclick='verTicket(${JSON.stringify(v)})'>
+            <i class="bi bi-receipt me-1"></i>Ver
+          </button>
+        </td>
+      </tr>`).join('') || '<tr><td colspan="6" style="color:var(--gris);text-align:center;padding:2rem">Sin ventas registradas</td></tr>';
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function verTicket(v) {
+  const items = v.items?.map(i =>
+    `<div class="d-flex justify-content-between">
+      <span>${i.nombre} x${i.cantidad}</span>
+      <span>${fmt(i.subtotal)}</span>
+    </div>`).join('') || '';
+
+  $('ticket-content').innerHTML = `
+    <div style="text-align:center;margin-bottom:.75rem">
+      <strong style="font-size:1.1rem">TechStore</strong><br>
+      <small>Sistema de Ventas</small><br>
+      <small>${fmtFecha(v.fecha)}</small>
+    </div>
+    <div class="ticket-sep"></div>
+    <div style="margin:.5rem 0"><strong>Cliente:</strong> ${v.cliente?.nombre || 'Venta rápida'}</div>
+    <div style="margin:.5rem 0"><strong>Vendedor:</strong> ${v.vendedor}</div>
+    <div class="ticket-sep"></div>
+    ${items}
+    <div class="ticket-sep"></div>
+    <div class="d-flex justify-content-between"><strong>TOTAL</strong><strong>${fmt(v.total)}</strong></div>
+    <div style="text-align:center;margin-top:.75rem;font-size:.8rem">
+      ID: ${v._id}<br>¡Gracias por su compra!
+    </div>`;
+  new bootstrap.Modal($('modalTicket')).show();
+}
+
+// ════════════════════════════════════════════════════
+// NUEVA VENTA
+// ════════════════════════════════════════════════════
+async function initNuevaVenta() {
+  try {
+    const [prods, clients] = await Promise.all([
+      api('/api/productos'),
+      api('/api/clientes')
+    ]);
+    productosCache = prods;
+    clientesCache  = clients;
+
+    // Poblar select clientes
+    $('venta-cliente').innerHTML =
+      '<option value="">— Sin cliente (venta rápida) —</option>' +
+      clients.map(c => `<option value="${c._id}">${c.nombre}</option>`).join('');
+
+    $('items-venta').innerHTML = '';
+    agregarItemVenta();
+    calcularTotal();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+function agregarItemVenta() {
+  const div = document.createElement('div');
+  div.className = 'item-row';
+  div.innerHTML = `
+    <select class="form-select item-producto" onchange="calcularTotal()">
+      <option value="">— Seleccionar producto —</option>
+      ${productosCache.map(p =>
+        `<option value="${p._id}" data-precio="${p.precio}" data-stock="${p.stock}">${p.nombre} — ${fmt(p.precio)} (stock: ${p.stock})</option>`
+      ).join('')}
+    </select>
+    <input type="number" class="form-control item-cantidad" value="1" min="1"
+      style="max-width:90px" onchange="calcularTotal()">
+    <span class="item-sub" style="min-width:90px;text-align:right;font-weight:700;color:var(--verde)">$0.00</span>
+    <button class="btn btn-ts-danger" onclick="this.parentElement.remove();calcularTotal()">
+      <i class="bi bi-x-lg"></i>
+    </button>`;
+  $('items-venta').appendChild(div);
+}
+
+function calcularTotal() {
+  let total = 0;
+  document.querySelectorAll('.item-row').forEach(row => {
+    const sel = row.querySelector('.item-producto');
+    const qty = parseInt(row.querySelector('.item-cantidad').value) || 0;
+    const opt = sel.options[sel.selectedIndex];
+    const precio = opt?.dataset?.precio ? parseFloat(opt.dataset.precio) : 0;
+    const sub = precio * qty;
+    row.querySelector('.item-sub').textContent = fmt(sub);
+    total += sub;
+  });
+  $('rv-subtotal').textContent = fmt(total);
+  $('rv-total').textContent    = fmt(total);
+}
+
+async function procesarVenta() {
+  const clienteId = $('venta-cliente').value;
+  const items = [];
+  let valid = true;
+
+  document.querySelectorAll('.item-row').forEach(row => {
+    const sel = row.querySelector('.item-producto');
+    const qty = parseInt(row.querySelector('.item-cantidad').value) || 0;
+    const id  = sel.value;
+    if (!id || qty < 1) { valid = false; return; }
+    items.push({ producto_id: id, cantidad: qty });
+  });
+
+  if (!valid || items.length === 0) {
+    toast('Agrega al menos un producto válido','err');
+    return;
+  }
+
+  try {
+    const data = await api('/api/ventas', 'POST', { cliente_id: clienteId, items });
+    toast('¡Venta registrada exitosamente!');
+    verTicket(data.venta);
+    $('items-venta').innerHTML = '';
+    agregarItemVenta();
+    calcularTotal();
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ════════════════════════════════════════════════════
+// REPORTES
+// ════════════════════════════════════════════════════
+async function cargarReportes() {
+  try {
+    const [masVendidos, inventario, fechas] = await Promise.all([
+      api('/api/reportes/productos-mas-vendidos'),
+      api('/api/reportes/inventario'),
+      api('/api/reportes/ventas-por-fecha')
+    ]);
+
+    $('rep-mas-vendidos').innerHTML = masVendidos.length
+      ? masVendidos.map((p,i) => `
+          <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #1e3a5f">
+            <div>
+              <span style="color:var(--amarillo);font-family:'JetBrains Mono',monospace;font-size:.8rem">#${i+1}</span>
+              <span class="ms-2" style="font-size:.85rem">${p._id}</span>
+            </div>
+            <div style="text-align:right">
+              <div class="badge-ts badge-verde">${p.cantidad} uds</div>
+              <div style="font-size:.75rem;color:var(--gris);margin-top:.1rem">${fmt(p.ingresos)}</div>
+            </div>
+          </div>`).join('')
+      : '<p style="color:var(--gris);font-size:.85rem">Sin datos</p>';
+
+    $('rep-inventario').innerHTML = inventario.map(p => `
+      <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #1e3a5f">
+        <span style="font-size:.85rem">${p.nombre}</span>
+        <span class="badge-ts ${p.stock < 5 ? 'badge-rojo' : 'badge-verde'}">${p.stock}</span>
+      </div>`).join('') || '<p style="color:var(--gris);font-size:.85rem">Sin productos</p>';
+
+    $('rep-fechas').innerHTML = fechas.map(f => `
+      <div class="d-flex justify-content-between py-2" style="border-bottom:1px solid #1e3a5f">
+        <span style="font-size:.82rem;color:var(--gris)">${f.fecha}</span>
+        <div style="text-align:right">
+          <div style="font-size:.85rem;font-weight:700;color:var(--verde)">${fmt(f.total_dia)}</div>
+          <div style="font-size:.72rem;color:var(--gris)">${f.num_ventas} venta(s)</div>
+        </div>
+      </div>`).join('') || '<p style="color:var(--gris);font-size:.85rem">Sin ventas</p>';
+
+  } catch(e) { toast(e.message,'err'); }
+}
+
+// ════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  cargarDashboard();
+});
+</script>
+</body>
+</html>
